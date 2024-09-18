@@ -57,3 +57,16 @@ button:hover {
   font-size: 14px;
   margin-bottom: 15px;
 }
+
+.forgot-password {
+  background-color: transparent;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  margin-top: 15px;
+  text-decoration: underline;
+}
+
+.forgot-password:hover {
+  color: #0056b3;
+}
