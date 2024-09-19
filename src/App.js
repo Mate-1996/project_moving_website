@@ -1,79 +1,86 @@
+// App.js
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import './App.css';
-import { auth } from './FirebaseConfig'; // Import Firebase Auth
-
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './FirebaseConfig'; // Firebase config file
+import { useNavigate } from 'react-router-dom'; // For redirecting after login/signup
+import './App.css'; // Your custom CSS for the form
 
 function App() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [message, setMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [isSigningUp, setIsSigningUp] = useState(false); // Toggle between login and sign up
+    const navigate = useNavigate(); // Used for navigating between routes
 
     // Handle login
     const handleLogin = async (e) => {
         e.preventDefault();
+        setErrorMessage('');
+        setSuccessMessage('');
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            alert('Logged in successfully!');
-            console.log('User:', userCredential.user);
+            setSuccessMessage(`Logged in successfully as ${userCredential.user.email}`);
+            navigate('/home'); // Redirect to home page after login
         } catch (error) {
-            setErrorMessage('Login failed. Check your credentials.');
-            console.error('Login Error:', error);
+            setErrorMessage("Login failed. Please check your credentials.");
         }
     };
 
-    // Handle forgot password
-    const handleForgotPassword = async () => {
-        if (!email) {
-            setErrorMessage('Please enter your email.');
-            return;
-        }
+    // Handle sign up
+    const handleSignUp = async (e) => {
+        e.preventDefault();
+        setErrorMessage('');
+        setSuccessMessage('');
         try {
-            await sendPasswordResetEmail(auth, email);
-            setMessage(`A password reset email has been sent to ${email}`);
-            setErrorMessage('');
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            setSuccessMessage(`Account created successfully for ${userCredential.user.email}`);
+            navigate('/home'); // Redirect to home page after sign-up
         } catch (error) {
-            setErrorMessage('Error sending reset email.');
-            console.error('Reset Error:', error);
+            setErrorMessage("Failed to create account. Please try again.");
         }
     };
 
     return (
         <div className="login-container">
-            <h2>Login</h2>
+            <h1>Centori Moving</h1>
+            <h2>{isSigningUp ? "Sign Up" : "Login"}</h2>
+
             {errorMessage && <p className="error-message">{errorMessage}</p>}
-            {message && <p className="success-message">{message}</p>}
-            <form onSubmit={handleLogin}>
+            {successMessage && <p className="success-message">{successMessage}</p>}
+
+            <form onSubmit={isSigningUp ? handleSignUp : handleLogin}>
                 <div className="form-group">
-                    <label htmlFor="email">Email:</label>
+                    <label>Email:</label>
                     <input
                         type="email"
-                        id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="password">Password:</label>
+                    <label>Password:</label>
                     <input
                         type="password"
-                        id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit">{isSigningUp ? "Sign Up" : "Login"}</button>
             </form>
 
-            <button className="forgot-password" onClick={handleForgotPassword}>
-                Forgot Password?
+            {/* Toggle between login and sign-up */}
+            <button onClick={() => setIsSigningUp(!isSigningUp)}>
+                {isSigningUp ? "Already have an account? Log In" : "Don't have an account? Sign Up"}
             </button>
         </div>
     );
 }
 
 export default App;
+
+
+
 
