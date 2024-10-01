@@ -1,148 +1,104 @@
-// import React from 'react';
-// import { Link } from 'react-router-dom'; // To navigate between pages
-
-// const HomePage = () => {
-//     return (
-//         <div className="homepage-container">
-//             <header>
-//                 <h1>Welcome to Centori Moving</h1>
-//                 <nav>
-//                     <ul>
-//                         {/* Add navigation links */}
-//                         <li>
-//                             <Link to="/booking">Book a Move</Link>
-//                         </li>
-//                         <li>
-//                             <Link to="/login">Login / Sign Up</Link>
-//                         </li>
-//                     </ul>
-//                 </nav>
-//             </header>
-
-//             <section className="homepage-content">
-//                 <h2>Your trusted moving service</h2>
-//                 <p>We offer professional moving services with the utmost care, whether you're moving across the street or across the country.</p>
-//             </section>
-
-//             <footer>
-//                 <p>&copy; 2024 Centori Moving. All rights reserved.</p>
-//             </footer>
-//         </div>
-//     );
-// };
-
-// export default HomePage;
-
-
-// HomePage.js
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { db, auth } from './firebaseConfig'; // Firebase config and authentication
-import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import './Home.css';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import signOut and onAuthStateChanged
+import { auth } from './firebaseConfig'; // Import your Firebase config
+import './Home.css'; // Import your custom CSS
 
 const HomePage = () => {
-    const [bookings, setBookings] = useState([]);
-    const [newDate, setNewDate] = useState('');
-    const [user, loading] = useAuthState(auth); // Get current user and loading state
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Track if user is logged in
     const navigate = useNavigate();
 
+    // Monitor authentication state
     useEffect(() => {
-        if (user) {
-            const fetchBookings = async () => {
-                const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
-                const querySnapshot = await getDocs(q);
-                const userBookings = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                setBookings(userBookings);
-            };
-            fetchBookings();
-        }
-    }, [user]);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setIsLoggedIn(true);  // User is logged in
+            } else {
+                setIsLoggedIn(false); // User is logged out
+            }
+        });
 
-    const handleReschedule = async (bookingId) => {
-        if (!newDate) {
-            alert('Please enter a new date.');
-            return;
-        }
-        const bookingRef = doc(db, 'bookings', bookingId);
-        await updateDoc(bookingRef, { date: newDate });
-        alert('Booking rescheduled!');
-        setNewDate('');
-        window.location.reload();
-    };
+        return () => unsubscribe(); // Cleanup on component unmount
+    }, []);
 
-    const handleCancel = async (bookingId) => {
-        const bookingRef = doc(db, 'bookings', bookingId);
-        await deleteDoc(bookingRef);
-        alert('Booking cancelled.');
-        window.location.reload();
-    };
-
+    // Handle logout functionality
     const handleLogout = async () => {
-        await auth.signOut();
-        navigate('/login'); // Redirect to login after logging out
+        try {
+            await signOut(auth); // Firebase sign-out
+            navigate('/login'); // Redirect to login page after logout
+        } catch (error) {
+            console.error("Error logging out: ", error);
+        }
     };
-
-    if (loading) {
-        return <div>Loading...</div>; // Show a loading state while the auth status is loading
-    }
 
     return (
-        <div className="home-container">
-            <h1>Welcome to Centori Moving</h1>
+        <div className="homepage-container">
+            <header className="hero-section">
+                <h1>Welcome to Centori Moving</h1>
+                <p>Your trusted moving service in Montreal</p>
 
-            {user ? (
-                <>
-                    {/* If logged in, show bookings and logout option */}
-                    <h2>Your Bookings</h2>
-                    {bookings.length > 0 ? (
-                        <ul>
-                            {bookings.map(booking => (
-                                <li key={booking.id}>
-                                    <p>Date: {booking.date}</p>
-                                    <p>Furniture Amount: {booking.furnitureAmount}</p>
-                                    <p>Distance: {booking.distance} km</p>
-                                    <p>From: {booking.startingLocation} To: {booking.arrivalLocation}</p>
-                                    <p>Fragile: {booking.fragile ? 'Yes' : 'No'}</p>
+                <div className="button-group">
+                    {/* Navigate using useNavigate hook */}
+                    <button onClick={() => navigate('/booking')} className="action-button">Book a Move</button>
 
-                                    <div className="reschedule">
-                                        <input
-                                            type="date"
-                                            value={newDate}
-                                            onChange={(e) => setNewDate(e.target.value)}
-                                            placeholder="New Date"
-                                        />
-                                        <button onClick={() => handleReschedule(booking.id)}>Reschedule</button>
-                                    </div>
-                                    <button onClick={() => handleCancel(booking.id)}>Cancel</button>
-                                </li>
-                            ))}
-                        </ul>
+                    {/* Conditional Rendering: Show Login/Sign Up if not logged in, Logout if logged in */}
+                    {isLoggedIn ? (
+                        <button onClick={handleLogout} className="action-button">Logout</button>
                     ) : (
-                        <p>No bookings found. <Link to="/booking">Book now!</Link></p>
+                        <button onClick={() => navigate('/login')} className="action-button">Login / Sign Up</button>
                     )}
+                </div>
+            </header>
 
-                    {/* Log Out button */}
-                    <button onClick={handleLogout}>Log Out</button>
-                </>
-            ) : (
-                <>
-                    {/* If not logged in, show login/sign-up option */}
-                    <h2>Please Log In or Sign Up</h2>
-                    <div className="auth-buttons">
-                        <Link to="/login"><button>Login</button></Link>
-                        <Link to="/signup"><button>Sign Up</button></Link>
+            <section className="about-section">
+                <h2>About Centori Moving</h2>
+                <p>
+                    Centori Moving is a professional moving company based in Montreal, specializing in both residential and commercial moves.
+                    Whether you're relocating to a new neighborhood or moving across the city, we ensure your belongings are moved safely and efficiently.
+                </p>
+            </section>
+
+            <section className="services-section">
+                <h2>Our Services</h2>
+                <div className="service-cards">
+                    <div className="service-card">
+                        <img src="truck.png" alt="Moving Truck" className="service-image" />
+                        <h3>Residential Moves</h3>
+                        <p>We handle local moves in Montreal with care and professionalism.</p>
                     </div>
-                </>
-            )}
+                    <div className="service-card">
+                        <img src="montreal.jpg" alt="Commercial Moving" className="service-image" />
+                        <h3>Commercial Moves</h3>
+                        <p>We provide specialized services for office and equipment relocations.</p>
+                    </div>
+                    <div className="service-card">
+                        <img src="fragile.jpg" alt="Fragile Items" className="service-image" />
+                        <h3>Fragile & Specialty Items</h3>
+                        <p>We ensure safe packing and transport of fragile or delicate items.</p>
+                    </div>
+                </div>
+            </section>
 
-            {/* Book Now Button */}
-            <div className="book-now">
-                <Link to="/booking"><button>Book Now</button></Link>
-            </div>
+            <section className="why-choose-us-section">
+                <h2>Why Choose Us?</h2>
+                <ul>
+                    <li>Experienced and professional team</li>
+                    <li>Affordable pricing with no hidden fees</li>
+                    <li>Safe handling of fragile and heavy items</li>
+                    <li>Flexible scheduling</li>
+                </ul>
+            </section>
+
+            <footer>
+                <p>&copy; 2024 Centori Moving. All rights reserved.</p>
+            </footer>
         </div>
     );
 };
 
 export default HomePage;
+
+
+
+
+

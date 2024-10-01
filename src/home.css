@@ -1,39 +1,169 @@
-.home-container {
+/* Main container for the homepage */
+.homepage-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  text-align: center;
+  background-color: #f5f5f5;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; /* Full height */
-  background-color: #f5f5f5; /* Light background */
-}
-
-.header {
-  display: flex;
   justify-content: space-between;
-  width: 100%;
-  padding: 20px;
-  background-color: #4CAF50; /* Green background for header */
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #007bff;
   color: white;
-}
-
-.auth-options button {
-  background-color: #fff;
-  color: #4CAF50;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.auth-options button:hover {
-  background-color: #e7e7e7; /* Light grey on hover */
-}
-
-footer {
-  margin-top: auto; /* Push footer to the bottom */
-  padding: 10px;
-  background-color: #333; /* Dark footer */
-  color: white;
+  padding: 50px 20px;
+  border-radius: 8px;
   text-align: center;
-  width: 100%;
+  position: relative;
 }
+
+/* Title and description in the hero section */
+.hero-section h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+.hero-section p {
+  font-size: 1.3em;
+  margin-bottom: 30px;
+}
+
+/* Centered button group for navigation in the header */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Action buttons in the header */
+.action-button {
+  padding: 10px 20px;
+  background-color: white;
+  color: #007bff;
+  border: 2px solid white;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: white;
+  color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* About Section */
+.about-section {
+  background-color: white;
+  padding: 40px 20px;
+  margin: 40px 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.about-section h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.about-section p {
+  font-size: 1.2em;
+  color: #333;
+}
+
+/* Services Section */
+.services-section {
+  padding: 40px 20px;
+}
+
+.services-section h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.service-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.service-card {
+  background-color: white;
+  width: 30%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+  transform: scale(1.05);
+}
+
+.service-card img {
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.service-card h3 {
+  font-size: 1.4em;
+  margin-top: 10px;
+}
+
+.service-card p {
+  font-size: 1.1em;
+  color: #555;
+}
+
+/* Why Choose Us Section */
+.why-choose-us-section {
+  background-color: #f5f5f5;
+  padding: 40px 20px;
+  border-radius: 8px;
+  margin: 40px 0;
+}
+
+.why-choose-us-section h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.why-choose-us-section ul {
+  list-style-type: none;
+  padding: 0;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.why-choose-us-section li {
+  margin: 15px 0;
+}
+
+/* Footer */
+footer {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+/* Footer text */
+footer p {
+  margin: 0;
+  font-size: 1em;
+}
+
+

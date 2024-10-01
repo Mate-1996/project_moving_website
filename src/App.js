@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import BookingPage from './BookingPage';
+import AdminDashboard from './AdminDashboard';
 
 function App() {
   return (
@@ -13,6 +14,8 @@ function App() {
 
         {/* Login route */}
         <Route path="/login" element={<LoginPage />} />
+        
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         {/* Booking route */}
         <Route path="/booking" element={<BookingPage />} />

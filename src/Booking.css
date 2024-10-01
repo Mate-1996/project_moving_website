@@ -1,118 +1,74 @@
-/* General styles */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif;
-    background-color: #fafafa;
+.booking-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 50%;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    text-align: center;
     color: #333;
 }
 
-.homepage-container {
-    text-align: center;
-    background-color: #fff8f0;
-    min-height: 100vh;
+form.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
 }
 
-/* Header styles */
-header {
-    background-color: #ff8c42; /* Orange */
-    padding: 20px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-    margin: 0;
-    font-size: 2.5rem;
-    color: white;
-    letter-spacing: 1px;
-}
-
-/* Navigation styles */
-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-nav ul li {
-    display: inline;
-}
-
-nav a {
-    color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-decoration: none;
-    padding: 10px 20px;
-    background-color: #ff6b21; /* Slightly darker orange */
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-nav a:hover {
-    background-color: #ff8c42; /* Lighter orange */
-}
-
-/* Main content */
-.homepage-content {
-    flex-grow: 1;
-    padding: 40px;
-    background-color: #fff3e0; /* Lightest orange */
-}
-
-.homepage-content h2 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-    color: #ff6b21;
-}
-
-.homepage-content p {
-    font-size: 1.1rem;
-    line-height: 1.6;
+label {
+    margin-bottom: 5px;
     color: #555;
 }
 
-/* Footer styles */
-footer {
-    background-color: #ff6b21;
+input[type="text"], input[type="date"], input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
     color: white;
-    padding: 15px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.booking-item {
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.message {
+    color: green;
+    font-weight: bold;
     text-align: center;
-    position: relative;
-    bottom: 0;
-    width: 100%;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
-footer p {
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    nav ul {
-        flex-direction: column;
-    }
-
-    nav a {
-        margin-bottom: 10px;
-    }
-
-    .homepage-content {
-        padding: 20px;
-    }
-
-    header h1 {
-        font-size: 2rem;
-    }
-
-    .homepage-content h2 {
-        font-size: 1.7rem;
-    }
-}
