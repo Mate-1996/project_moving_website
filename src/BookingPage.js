@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from './firebaseConfig'; // Firebase config
-import { ref, set, push, onValue, update, remove } from 'firebase/database'; // Realtime Database functions
 import { useAuthState } from 'react-firebase-hooks/auth'; // Hook to get auth state
 import { auth } from './firebaseConfig'; // Firebase authentication
 import './Booking.css';
@@ -22,14 +20,12 @@ const Booking = () => {
     const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
+        // Fetch bookings from the backend when the user logs in
         if (user) {
-            const bookingsRef = ref(db, `bookings/${user.uid}`);
-            onValue(bookingsRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    setBookings(Object.entries(data)); // Convert object to array
-                }
-            });
+            fetch(`/api/bookings/${user.uid}`)
+                .then(response => response.json())
+                .then(data => setBookings(data))
+                .catch(error => console.error("Error fetching bookings: ", error));
         }
     }, [user]);
 
@@ -52,22 +48,30 @@ const Booking = () => {
         }
 
         try {
-            const bookingRef = selectedBookingId
-                ? ref(db, `bookings/${user.uid}/${selectedBookingId}`)
-                : push(ref(db, `bookings/${user.uid}`)); // Create a unique booking if not updating
-
-            await set(bookingRef, {
+            const bookingData = {
                 date,
                 furnitureAmount: Number(furnitureAmount),
                 distance,
                 startingLocation,
                 arrivalLocation,
                 fragile,
+                userId: user.uid, // Include user ID in the request
                 createdAt: new Date().toISOString(),
+            };
+
+            const response = await fetch(`/api/bookings/${selectedBookingId || ''}`, {
+                method: selectedBookingId ? 'PUT' : 'POST', // Update or create new booking
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bookingData),
             });
 
+            if (!response.ok) {
+                throw new Error('Failed to save booking');
+            }
+
             setMessage(selectedBookingId ? 'Booking updated successfully!' : 'Booking created successfully!');
-            // Reset form fields
             resetForm();
         } catch (error) {
             console.error("Error saving booking: ", error);
@@ -82,7 +86,7 @@ const Booking = () => {
         setStartingLocation('');
         setArrivalLocation('');
         setFragile(false);
-        setSelectedBookingId(null); // Reset selected booking ID
+        setSelectedBookingId(null);
     };
 
     const handleUpdate = (id, booking) => {
@@ -97,8 +101,14 @@ const Booking = () => {
 
     const handleDelete = async (id) => {
         try {
-            const bookingRef = ref(db, `bookings/${user.uid}/${id}`);
-            await remove(bookingRef);
+            const response = await fetch(`/api/bookings/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel booking');
+            }
+
             setMessage('Booking canceled successfully!');
         } catch (error) {
             console.error("Error deleting booking: ", error);
@@ -129,16 +139,18 @@ const Booking = () => {
                         value={furnitureAmount}
                         onChange={(e) => setFurnitureAmount(e.target.value)}
                         min="0"
-                        max="100"
+                        max="40"
                         required
                     />
                 </div>
                 <div className="form-group">
                     <label>Distance (in km):</label>
                     <input
-                        type="text"
+                        type="number"
                         value={distance}
                         onChange={(e) => setDistance(e.target.value)}
+                        min="0"
+                        max="25"
                         required
                     />
                 </div>
@@ -201,3 +213,4 @@ const Booking = () => {
 };
 
 export default Booking;
+

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "centori-moving",
+  "private_key_id": "a1fec8a984bf6300e21eeb9587934ec2e2b93b4e",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCUF5N1fZzY2dkO\nGZMoZujz4XYP82Nn+e73VbY5kjdlaITGAkPKVoXc1dlEsGvCHSv00hIxhE3E5SUc\nEPwtfKo1X62r1fbD9URBCdwZ0oOCnymkkt2Tw5lrCC9L/h2aFRsqnZpcETuFtcQ5\n0yPB9mxqELbPbVXuiWeAZXlSluv2Gby0ZOqozeZj40M37idYGyRAMnMtS4jd9D9R\ntejRf9LSk2xLPzRa0mDMFxOSvPdlYKnAFrbmwUTq/9YZVR3BmygT+GplWoiHKSJS\ns/1KL+IBnEOYtU5fp2+g0M3sTyW8pKGip97VD6NpTMeBXLBW1APS5zESh9nqCOEK\nrMuILAVBAgMBAAECggEAAjeId9UMT3ZoEy0LVgAVDdeVdJ+BtglYtt+pMBtHVITi\nyJ25OugeLg7j0dfWmSE7f/lSwpEsN93FTIetkBcXwN+gjNwRtbUa0zgXpn76BIR8\n81or0n3hB/2R9bAwFxcooQlFybSMAKWsB8CTKQtsa+RkVDPFukyDczmG/iyaYNn+\ncXTMZFcxwNLkZdOddj/9+BhgCOzX+0t056Od3r4dem5APJOMRTQN9dxJXJ2HnhbU\nDLaOwmmz9Xkrq6WpEf2l5XOoJGWlYH8BTLhrmEyGw7nX9eaIt4QQuGVsdmS40a/j\nT6vQSTjQYDE77PzRN92FnX8h0IAUoGNUjarGcoPX1QKBgQDOI1HAlXysSCZ2K390\no1nGU+982HaTKRPxkU0PM1X/QT1LweJe3xfpEa5n3h/FdhN6IlF2LSXzN7VUUEsq\nVg/x9smsznPZxtRLsG0AvjZS6O7wFAwb839T3QVwsaDjPA1dcc0r4t7DbBxI+lXD\nrxWndzZTYXJWRmoVo/+k/jla9QKBgQC36eHdhQqIRpR+Z/7xMSWYnFjYz4wH3ucq\nm+UIDsLZ7UzR+YM7RRCDGd5nUofH8SRmd5/FrfuudephN0NjFT9aGNz/5YqnJaYb\nqGrIbs4pau5AKr+FFStq0RYYEEuzcjUGPyE01uWieMHp3dVm0An+apYw6uMTtK3s\nIKNV6PYpnQKBgQCojp7pwBKq+XBhzl2xLWVaVAYPax1CZiOFs090r4CRcXJCwS5u\nbzQpA6k+C5alK1Dv3KIJ5Q8UGyht4h4kZy0wqKDuaf63Q+sSXRg0tFTNZOUEcRAZ\nxvkFxUQOi2DIjrFLCKRBT4jh+UQDtJdupHsrbcKBWbxZqchTG8AN1UdnBQKBgFPy\nQ5BzW51cagdQvMOm5TxFkSBVi9tD2UxPoDkPU81ZTYlCVK5HFgRhWGzc9PFElpLW\n42y9v3WgiP0a1n1xg1tCog2D3sfwnWNeem9GdH/fOSS83nKGeSzmhykwtv0Pkjhp\ntGSD+okwiYKQKQomx4kDac6mSEQEYqa3NxbNoR7ZAoGBAKIxNOzsYqSm6YzHNAio\nv02ZIEXQwuOXLYBewhlwM6o8tcSxC61WTgVHiX0YeVlsL2sYrrLKAsgTOBHzic/8\nhmad/gaHyNWa6AW/Hj0zpVXXRb5/GAt0et04rdNvemQeIyQMw5eE0xgSeFf1fOFP\nxpH2ETcBVbtJng/Kk7fOgMMd\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-o0c4w@centori-moving.iam.gserviceaccount.com",
+  "client_id": "108016990238464987474",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-o0c4w%40centori-moving.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
