@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebaseConfig';  // Ensure this path is correct
 import { ref, onValue, update, remove } from 'firebase/database';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -8,16 +9,38 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editing, setEditing] = useState(null);
     const [modifiedBooking, setModifiedBooking] = useState({});
+    const [reviews, setReviews] = useState([]);
+    const [loadingReviews, setLoadingReviews] = useState(true);
+    const navigate = useNavigate(); // Initialize useNavigate
 
     // Fetch bookings from Firebase
     useEffect(() => {
         const bookingsRef = ref(db, 'bookings/');
         onValue(bookingsRef, (snapshot) => {
             const data = snapshot.val();
-            console.log('Fetched data:', data); // Log fetched data for debugging
             const bookingsList = data ? Object.entries(data).map(([id, booking]) => ({ id, ...booking })) : [];
-            console.log('Processed bookings list:', bookingsList); // Log processed bookings list
             setBookings(bookingsList);
+        });
+    }, []);
+
+    // Fetch reviews from Firebase
+    useEffect(() => {
+        const reviewsRef = ref(db, 'reviews');
+        onValue(reviewsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const fetchedReviews = [];
+                snapshot.forEach((childSnapshot) => {
+                    const review = {
+                        id: childSnapshot.key,
+                        ...childSnapshot.val(),
+                    };
+                    fetchedReviews.push(review);
+                });
+                setReviews(fetchedReviews);
+            } else {
+                setReviews([]);
+            }
+            setLoadingReviews(false);
         });
     }, []);
 
@@ -33,13 +56,25 @@ const AdminDashboard = () => {
             });
     };
 
+    // Delete review
+    const handleDeleteReview = (id) => {
+        const reviewRef = ref(db, `reviews/${id}`);
+        remove(reviewRef)
+            .then(() => {
+                console.log(`Review ${id} deleted successfully.`);
+            })
+            .catch((error) => {
+                console.error('Error deleting review:', error);
+            });
+    };
+
     // Modify booking
     const handleModify = (id) => {
         const bookingRef = ref(db, `bookings/${id}`);
         update(bookingRef, modifiedBooking)
             .then(() => {
                 console.log(`Booking ${id} updated successfully.`);
-                setEditing(null); // Exit editing mode
+                setEditing(null);
             })
             .catch((error) => {
                 console.error('Error updating booking:', error);
@@ -60,8 +95,8 @@ const AdminDashboard = () => {
 
     // Filter bookings based on search term
     const filteredBookings = bookings.filter((booking) => {
-        const email = booking.email || '';  // Default to empty string if undefined
-        const date = booking.date || '';    // Default to empty string if undefined
+        const email = booking.email || '';
+        const date = booking.date || '';
         return (
             email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             date.includes(searchTerm)
@@ -77,7 +112,6 @@ const AdminDashboard = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-
             <table className="bookings-table">
                 <thead>
                     <tr>
@@ -182,6 +216,39 @@ const AdminDashboard = () => {
                     )}
                 </tbody>
             </table>
+
+            <h2>Reviews</h2>
+            {loadingReviews ? (
+                <p>Loading reviews...</p>
+            ) : reviews.length > 0 ? (
+                <table className="reviews-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Review</th>
+                            <th>Stars</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {reviews.map((review) => (
+                            <tr key={review.id}>
+                                <td>{review.user}</td>
+                                <td>{review.text}</td>
+                                <td>{review.stars}</td>
+                                <td>
+                                    <button onClick={() => handleDeleteReview(review.id)}>Delete</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No reviews found.</p>
+            )}
+
+            {/* Button to navigate back to Login Page */}
+            <button onClick={() => navigate('/login')}>Back to Login</button>
         </div>
     );
 };

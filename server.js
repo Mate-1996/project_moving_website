@@ -17,16 +17,14 @@ app.post('/api/payment', async (req, res) => {
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
-            amount,
-            currency: 'usd', // Change currency as needed
+            amount: amount,
+            currency: 'usd',
             payment_method: paymentMethodId,
             confirm: true,
         });
-
-        res.send({ success: true, paymentIntent });
+        res.json({ success: true, paymentIntent });
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: 'Payment processing failed' });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 

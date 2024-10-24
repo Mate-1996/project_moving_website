@@ -1,3 +1,99 @@
+// import React, { useState, useEffect } from 'react';
+// import { db } from './firebaseConfig';  // Ensure this path is correct
+// import { ref, onValue, remove } from 'firebase/database';
+// import './AdminDashboard.css';
+
+// const AdminDashboard = () => {
+//     const [bookings, setBookings] = useState([]);
+//     const [reviews, setReviews] = useState([]);
+//     const [searchTerm, setSearchTerm] = useState('');
+//     const [loadingReviews, setLoadingReviews] = useState(true);
+
+//     // Fetch bookings from Firebase
+//     useEffect(() => {
+//         const bookingsRef = ref(db, 'bookings/');
+//         onValue(bookingsRef, (snapshot) => {
+//             const data = snapshot.val();
+//             const bookingsList = data ? Object.entries(data).map(([id, booking]) => ({ id, ...booking })) : [];
+//             setBookings(bookingsList);
+//         });
+//     }, []);
+
+//     // Fetch reviews from Firebase
+//     useEffect(() => {
+//         const reviewsRef = ref(db, 'reviews'); // Reference to the 'reviews' node
+//         onValue(reviewsRef, (snapshot) => {
+//             if (snapshot.exists()) {
+//                 const fetchedReviews = [];
+//                 snapshot.forEach((childSnapshot) => {
+//                     const review = {
+//                         id: childSnapshot.key,  // The unique ID for each review
+//                         ...childSnapshot.val(), // The actual review data
+//                     };
+//                     fetchedReviews.push(review);
+//                 });
+//                 setReviews(fetchedReviews); // Update the state with fetched reviews
+//             } else {
+//                 setReviews([]); // Clear reviews if there are no reviews
+//             }
+//             setLoadingReviews(false); // Set loading to false once data is fetched
+//         });
+//     }, []);
+
+//     // Delete review
+//     const handleDeleteReview = (id) => {
+//         const reviewRef = ref(db, `reviews/${id}`);
+//         remove(reviewRef)
+//             .then(() => {
+//                 console.log(`Review ${id} deleted successfully.`);
+//             })
+//             .catch((error) => {
+//                 console.error('Error deleting review:', error);
+//             });
+//     };
+
+//     return (
+//         <div className="admin-dashboard">
+//             <h1>Admin Dashboard</h1>
+            
+//             <h2>Bookings</h2>
+//             {/* Your booking table and search functionality here... */}
+
+//             <h2>Reviews</h2>
+//             {loadingReviews ? (
+//                 <p>Loading reviews...</p>
+//             ) : reviews.length > 0 ? (
+//                 <table className="reviews-table">
+//                     <thead>
+//                         <tr>
+//                             <th>User</th>
+//                             <th>Review</th>
+//                             <th>Stars</th>
+//                             <th>Actions</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody>
+//                         {reviews.map((review) => (
+//                             <tr key={review.id}>
+//                                 <td>{review.user}</td>
+//                                 <td>{review.text}</td>
+//                                 <td>{review.stars}</td>
+//                                 <td>
+//                                     <button onClick={() => handleDeleteReview(review.id)}>Delete</button>
+//                                 </td>
+//                             </tr>
+//                         ))}
+//                     </tbody>
+//                 </table>
+//             ) : (
+//                 <p>No reviews found.</p>
+//             )}
+//         </div>
+//     );
+// };
+
+// export default AdminDashboard;
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
@@ -206,8 +302,6 @@ useEffect(() => {
 };
 
 export default HomePage;
-
-
 
 
 
