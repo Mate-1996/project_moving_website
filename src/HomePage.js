@@ -99,7 +99,7 @@ import { useNavigate } from 'react-router-dom';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { ref, push, set, onValue } from 'firebase/database'; // Import Realtime Database methods
 import { auth, db } from './firebaseConfig'; // Import Realtime Database instance
-import './Home.css';
+import './home.css';
 
 const HomePage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);

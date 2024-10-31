@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth'; // Hook to get auth state
-import { auth } from './firebaseConfig'; // Firebase authentication
+import { auth, db } from './firebaseConfig'; // Firebase authentication and Realtime Database
+import { ref, onValue, set, push, remove } from 'firebase/database'; // Import Firebase Realtime Database methods
 import { loadStripe } from '@stripe/stripe-js';  // Import Stripe
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';  // Stripe elements
+import { Elements, CardElement} from '@stripe/react-stripe-js';  // Stripe elements
 import './Booking.css';
 
 const stripePromise = loadStripe('pk_test_51QClMKG3xeoTL0dZZfCkdfTHuATPGjJ5eF6dW9Cg2Y5KmOL78cqMXlMiTeOSYMuHRsnwGval4VtZkUF0ItHgShye00VgnTnlAt');
@@ -20,50 +21,65 @@ const Booking = () => {
     const [bookings, setBookings] = useState([]); // For storing user's bookings
     const [selectedBookingId, setSelectedBookingId] = useState(null); // Track selected booking
     const [price, setPrice] = useState(0);  // State for total price
-    const stripe = useStripe();
-    const elements = useElements();
 
     // Set min date to today's date
     const today = new Date().toISOString().split('T')[0];
 
+    // Fetch bookings from Firebase Realtime Database
     useEffect(() => {
-        // Fetch bookings from the backend when the user logs in
         if (user) {
-            fetch(`/api/bookings/${user.uid}`)
-                .then(response => response.json())
-                .then(data => setBookings(data))
-                .catch(error => console.error("Error fetching bookings: ", error));
+            const bookingsRef = ref(db, `bookings/${user.uid}`); // Reference to the user's bookings
+
+            // Listen for value changes in the bookings node
+            onValue(bookingsRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const fetchedBookings = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const booking = {
+                            id: childSnapshot.key,  // The unique ID for each booking
+                            ...childSnapshot.val(), // The actual booking data
+                        };
+                        fetchedBookings.push(booking);
+                    });
+                    setBookings(fetchedBookings); // Update state with fetched bookings
+                } else {
+                    setBookings([]); // Clear bookings if none are found
+                }
+            }, (error) => {
+                console.error("Error fetching bookings: ", error);
+            });
         }
     }, [user]);
 
-    const calculatePrice = () => {
+    // Calculate total price based on the number of furniture items and distance
+    const calculatePrice = useCallback(() => {
         const furniturePrice = Number(furnitureAmount) * 10;  // $10 per furniture
         const distancePrice = Number(distance) * 5;           // $5 per km
         setPrice(furniturePrice + distancePrice);
-    };
-
-    useEffect(() => {
+      }, [furnitureAmount, distance]);
+    
+      useEffect(() => {
         calculatePrice();  // Recalculate price when furniture amount or distance changes
-    }, [furnitureAmount, distance]);
+      }, [furnitureAmount, distance, calculatePrice]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!user) {
             setMessage("You must be logged in to create a booking.");
             return;
         }
-    
+
         if (furnitureAmount < 0 || furnitureAmount > 100) {
             setMessage('Furniture amount must be between 0 and 100.');
             return;
         }
-    
+
         if (distance < 0 || distance > 25) {
             setMessage('Distance cannot exceed 25 km and must be above 0');
             return;
         }
-    
+
         try {
             // Create booking data
             const bookingData = {
@@ -74,63 +90,53 @@ const Booking = () => {
                 arrivalLocation,
                 fragile,
                 userId: user.uid,
-                price,  // Include the price in the booking data
+                price,
                 createdAt: new Date().toISOString(),
             };
-    
-            // Step 1: Create Payment Method
-            const cardElement = elements.getElement(CardElement);
-            const { error, paymentMethod } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: cardElement,
-            });
-    
-            if (error) {
-                console.error(error);
-                setMessage('Payment failed. Please try again.');
-                return;
-            }
-    
-            // Step 2: Call your backend payment endpoint
-            const paymentResponse = await fetch('/api/payment', {
+
+            // Save booking data to Firebase Realtime Database
+            const bookingRef = ref(db, `bookings/${user.uid}`);
+            const newBookingRef = push(bookingRef); // Create a new unique ID for the booking
+            await set(newBookingRef, bookingData); // Save bookingData under the new bookingRef
+
+            // Create a Checkout Session by calling the backend
+            const response = await fetch('http://localhost:5000/create-checkout-session', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    amount: price * 100, // Amount in cents
-                    paymentMethodId: paymentMethod.id,
-                }),
+                body: JSON.stringify({ amount: price * 100 }), // Send amount in cents
             });
-    
-            const paymentData = await paymentResponse.json();
-    
-            if (!paymentData.success) {
-                throw new Error('Payment failed');
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                throw new Error(errorResponse.error);
             }
-    
-            // Step 3: Save booking to your backend
-            const bookingResponse = await fetch(`/api/bookings/${selectedBookingId || ''}`, {
-                method: selectedBookingId ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ...bookingData, paymentMethodId: paymentMethod.id }),
+
+            const session = await response.json();
+
+            // Redirect to Stripe's Checkout page
+            const stripe = await stripePromise;
+            const { error } = await stripe.redirectToCheckout({
+                sessionId: session.id,
             });
-    
-            if (!bookingResponse.ok) {
-                throw new Error('Failed to save booking');
+
+            if (error) {
+                console.error(error);
+                setMessage('Payment failed. Please try again.');
             }
-    
-            setMessage(selectedBookingId ? 'Booking updated successfully!' : 'Booking created successfully!');
+
+            // Reset the form
             resetForm();
+
+            setMessage('Booking created successfully!');
         } catch (error) {
-            console.error("Error processing payment:", error);
-            setMessage('Failed to save booking. Please try again.');
+            console.error("Error creating checkout session:", error);
+            setMessage('Failed to create booking. Please try again.');
         }
     };
-    
 
+    // Function to reset the form fields
     const resetForm = () => {
         setDate('');
         setFurnitureAmount('');
@@ -153,13 +159,8 @@ const Booking = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`/api/bookings/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to cancel booking');
-            }
+            const bookingRef = ref(db, `bookings/${user.uid}/${id}`);
+            await remove(bookingRef); // Remove the selected booking from Firebase
 
             setMessage('Booking canceled successfully!');
         } catch (error) {
@@ -248,16 +249,16 @@ const Booking = () => {
             <h2>Your Bookings</h2>
             {bookings.length > 0 ? (
                 <ul>
-                    {bookings.map(([id, booking]) => (
-                        <li key={id} className="booking-item">
+                    {bookings.map((booking) => (
+                        <li key={booking.id} className="booking-item">
                             <p>Date: {booking.date}</p>
                             <p>Furniture: {booking.furnitureAmount}</p>
                             <p>Distance: {booking.distance}</p>
                             <p>Starting Location: {booking.startingLocation}</p>
                             <p>Arrival Location: {booking.arrivalLocation}</p>
                             <p>Fragile: {booking.fragile ? 'Yes' : 'No'}</p>
-                            <button onClick={() => handleUpdate(id, booking)}>Edit</button>
-                            <button onClick={() => handleDelete(id)}>Cancel</button>
+                            <button onClick={() => handleUpdate(booking.id, booking)}>Edit</button>
+                            <button onClick={() => handleDelete(booking.id)}>Cancel</button>
                         </li>
                     ))}
                 </ul>
@@ -280,5 +281,6 @@ const App = () => (
 );
 
 export default App;
+
 
 
