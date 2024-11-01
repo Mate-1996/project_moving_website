@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { db } from './firebaseConfig';  // Ensure this path is correct
+import { db } from './firebaseConfig';
 import { ref, onValue, update, remove } from 'firebase/database';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -11,24 +11,46 @@ const AdminDashboard = () => {
     const [modifiedBooking, setModifiedBooking] = useState({});
     const [reviews, setReviews] = useState([]);
     const [loadingReviews, setLoadingReviews] = useState(true);
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
 
     // Fetch bookings from Firebase
     useEffect(() => {
-        const bookingsRef = ref(db, 'bookings/');
-        onValue(bookingsRef, (snapshot) => {
-            const data = snapshot.val();
-            const bookingsList = data ? Object.entries(data).map(([id, booking]) => ({ id, ...booking })) : [];
-            setBookings(bookingsList);
+        const bookingsRef = ref(db, 'bookings');
+        
+        const unsubscribe = onValue(bookingsRef, (snapshot) => {
+            const fetchedBookings = [];
+            if (snapshot.exists()) {
+                snapshot.forEach((userSnapshot) => {
+                    const userId = userSnapshot.key;
+                    const userBookings = userSnapshot.val();
+                    if (typeof userBookings === 'object') {
+                        Object.entries(userBookings).forEach(([id, booking]) => {
+                            fetchedBookings.push({
+                                id,
+                                userId,
+                                ...booking,
+                            });
+                        });
+                    }
+                });
+            }
+            // Filter out any incomplete or undefined bookings
+            setBookings(fetchedBookings.filter(booking => booking && booking.date));
         });
+
+        // Clear bookings on unmount
+        return () => {
+            unsubscribe();
+            setBookings([]);
+        };
     }, []);
 
     // Fetch reviews from Firebase
     useEffect(() => {
         const reviewsRef = ref(db, 'reviews');
         onValue(reviewsRef, (snapshot) => {
+            const fetchedReviews = [];
             if (snapshot.exists()) {
-                const fetchedReviews = [];
                 snapshot.forEach((childSnapshot) => {
                     const review = {
                         id: childSnapshot.key,
@@ -44,37 +66,52 @@ const AdminDashboard = () => {
         });
     }, []);
 
-    // Delete booking
-    const handleDelete = (id) => {
-        const bookingRef = ref(db, `bookings/${id}`);
-        remove(bookingRef)
-            .then(() => {
-                console.log(`Booking ${id} deleted successfully.`);
-            })
-            .catch((error) => {
-                console.error('Error deleting booking:', error);
-            });
+    // Delete booking with confirmation
+    const handleDelete = (userId, id) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this booking?");
+        if (confirmDelete) {
+            const bookingRef = ref(db, `bookings/${userId}/${id}`);
+            remove(bookingRef)
+                .then(() => {
+                    console.log(`Booking ${id} deleted successfully.`);
+                })
+                .catch((error) => {
+                    console.error('Error deleting booking:', error);
+                });
+        }
     };
 
-    // Delete review
+    // Delete review with confirmation
     const handleDeleteReview = (id) => {
-        const reviewRef = ref(db, `reviews/${id}`);
-        remove(reviewRef)
-            .then(() => {
-                console.log(`Review ${id} deleted successfully.`);
-            })
-            .catch((error) => {
-                console.error('Error deleting review:', error);
-            });
+        const confirmDelete = window.confirm("Are you sure you want to delete this review?");
+        if (confirmDelete) {
+            const reviewRef = ref(db, `reviews/${id}`);
+            remove(reviewRef)
+                .then(() => {
+                    console.log(`Review ${id} deleted successfully.`);
+                })
+                .catch((error) => {
+                    console.error('Error deleting review:', error);
+                });
+        }
     };
 
-    // Modify booking
-    const handleModify = (id) => {
-        const bookingRef = ref(db, `bookings/${id}`);
+    // Modify booking and keep the nested structure
+    const handleModify = (userId, id) => {
+        const bookingRef = ref(db, `bookings/${userId}/${id}`);
         update(bookingRef, modifiedBooking)
             .then(() => {
                 console.log(`Booking ${id} updated successfully.`);
                 setEditing(null);
+
+                // Update local state without re-fetching from Firebase
+                setBookings((prevBookings) =>
+                    prevBookings.map((booking) =>
+                        booking.id === id && booking.userId === userId
+                            ? { ...booking, ...modifiedBooking }
+                            : booking
+                    )
+                );
             })
             .catch((error) => {
                 console.error('Error updating booking:', error);
@@ -84,7 +121,7 @@ const AdminDashboard = () => {
     // Start editing a booking
     const startEditing = (booking) => {
         setEditing(booking.id);
-        setModifiedBooking(booking);
+        setModifiedBooking(booking); // Populate modifiedBooking with current booking data
     };
 
     // Cancel editing
@@ -95,10 +132,13 @@ const AdminDashboard = () => {
 
     // Filter bookings based on search term
     const filteredBookings = bookings.filter((booking) => {
-        const email = booking.email || '';
+        const email = booking.email ? booking.email.toLowerCase() : '';
         const date = booking.date || '';
+
+        if (!searchTerm) return true;
+
         return (
-            email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            email.includes(searchTerm.toLowerCase()) ||
             date.includes(searchTerm)
         );
     });
@@ -136,7 +176,7 @@ const AdminDashboard = () => {
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, email: e.target.value })}
                                         />
                                     ) : (
-                                        booking.email
+                                        booking.email || 'N/A'
                                     )}
                                 </td>
                                 <td>
@@ -147,63 +187,63 @@ const AdminDashboard = () => {
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, date: e.target.value })}
                                         />
                                     ) : (
-                                        booking.date
+                                        booking.date || 'N/A'
                                     )}
                                 </td>
                                 <td>
                                     {editing === booking.id ? (
                                         <input
                                             type="number"
-                                            value={modifiedBooking.furnitureAmount || ''}
+                                            value={modifiedBooking.furnitureAmount || 0}
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, furnitureAmount: e.target.value })}
                                         />
                                     ) : (
-                                        booking.furnitureAmount
+                                        booking.furnitureAmount || 0
                                     )}
                                 </td>
                                 <td>
                                     {editing === booking.id ? (
                                         <input
                                             type="text"
-                                            value={modifiedBooking.distance || ''}
+                                            value={modifiedBooking.distance || 0}
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, distance: e.target.value })}
                                         />
                                     ) : (
-                                        booking.distance
+                                        booking.distance || 0
                                     )}
                                 </td>
                                 <td>
                                     {editing === booking.id ? (
                                         <input
                                             type="text"
-                                            value={modifiedBooking.startingLocation || ''}
+                                            value={modifiedBooking.startingLocation || 'N/A'}
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, startingLocation: e.target.value })}
                                         />
                                     ) : (
-                                        booking.startingLocation
+                                        booking.startingLocation || 'N/A'
                                     )}
                                 </td>
                                 <td>
                                     {editing === booking.id ? (
                                         <input
                                             type="text"
-                                            value={modifiedBooking.arrivalLocation || ''}
+                                            value={modifiedBooking.arrivalLocation || 'N/A'}
                                             onChange={(e) => setModifiedBooking({ ...modifiedBooking, arrivalLocation: e.target.value })}
                                         />
                                     ) : (
-                                        booking.arrivalLocation
+                                        booking.arrivalLocation || 'N/A'
                                     )}
                                 </td>
                                 <td>
                                     {editing === booking.id ? (
                                         <>
-                                            <button onClick={() => handleModify(booking.id)}>Save</button>
+                                            <button onClick={() => handleModify(booking.userId, booking.id)}>Save</button>
                                             <button onClick={cancelEditing}>Cancel</button>
                                         </>
                                     ) : (
                                         <>
                                             <button onClick={() => startEditing(booking)}>Edit</button>
-                                            <button onClick={() => handleDelete(booking.id)}>Delete</button>
+                                            <button onClick={() => handleDelete(booking.userId, booking.id)}>Delete</button>
                                         </>
                                     )}
                                 </td>
@@ -247,12 +287,18 @@ const AdminDashboard = () => {
                 <p>No reviews found.</p>
             )}
 
-            {/* Button to navigate back to Login Page */}
             <button onClick={() => navigate('/login')}>Back to Login</button>
         </div>
     );
 };
 
 export default AdminDashboard;
+
+
+
+
+
+
+
 
 
