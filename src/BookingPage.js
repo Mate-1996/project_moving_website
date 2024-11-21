@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth'; // Hook to get auth state
-import { auth, db } from './firebaseConfig'; // Firebase authentication and Realtime Database
+import { auth, db } from './FirebaseConfig'; // Firebase authentication and Realtime Database
 import { ref, onValue, set, push, remove } from 'firebase/database'; // Import Firebase Realtime Database methods
 import { loadStripe } from '@stripe/stripe-js';  // Import Stripe
-import { Elements, CardElement} from '@stripe/react-stripe-js';  // Stripe elements
+import { Elements} from '@stripe/react-stripe-js';  // Stripe elements
 import './Booking.css';
 
 const stripePromise = loadStripe('pk_test_51QClMKG3xeoTL0dZZfCkdfTHuATPGjJ5eF6dW9Cg2Y5KmOL78cqMXlMiTeOSYMuHRsnwGval4VtZkUF0ItHgShye00VgnTnlAt');
@@ -238,11 +238,7 @@ const Booking = () => {
                 <div className="form-group">
                     <label>Total Price: ${price}</label>
                 </div>
-                {/* Card Element for Payment */}
-                <div className="form-group">
-                    <label>Credit Card Information:</label>
-                    <CardElement />
-                </div>
+                
                 <button type="submit">{selectedBookingId ? 'Update Booking & Pay' : 'Submit Booking & Pay'}</button>
             </form>
 

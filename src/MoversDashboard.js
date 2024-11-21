@@ -1,92 +1,79 @@
-// import React, { useEffect, useState } from 'react';
-// import { getDatabase, ref, set, onValue } from "firebase/database";
-// import { getAuth } from "firebase/auth";
-// import Calendar from 'react-calendar';
-// import 'react-calendar/dist/Calendar.css';
+import React, { useState, useEffect } from 'react';
+import { db } from './FirebaseConfig'; // Firebase configuration
+import { auth } from './FirebaseConfig'; // Firebase authentication
+import { ref, onValue } from 'firebase/database';
+import './MoversDashboard.css';
 
-// const MoversDashboard = () => {
-//   const [dayOff, setDayOff] = useState(null);
-//   const [dayOffsList, setDayOffsList] = useState([]);
-  
-//   const auth = getAuth();
-//   const db = getDatabase();
+const MoverDashboard = () => {
+    const [assignedBookings, setAssignedBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-//   // Fetch the user's day offs when the component mounts
-//   useEffect(() => {
-//     const user = auth.currentUser;
+    // Get the current user's email
+    const currentUser = auth.currentUser;
 
-//     if (user) {
-//       const dayOffsRef = ref(db, `dayOffs/${user.uid}`);
-//       const unsubscribe = onValue(dayOffsRef, (snapshot) => {
-//         const data = snapshot.val();
-//         if (data) {
-//           const dayOffsArray = Object.values(data);
-//           setDayOffsList(dayOffsArray);
-//         } else {
-//           setDayOffsList([]);
-//         }
-//       });
+    useEffect(() => {
+        if (currentUser) {
+            const sanitizedEmail = currentUser.email.replace('.', '_'); // Firebase-safe key
+            const assignedBookingsRef = ref(db, `movers/${sanitizedEmail}/assignedBookings`);
 
-//       return () => unsubscribe();
-//     }
-//   }, [auth.currentUser, db]); // Added db to dependencies
+            const unsubscribe = onValue(assignedBookingsRef, (snapshot) => {
+                const fetchedBookings = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        fetchedBookings.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val(),
+                        });
+                    });
+                }
+                setAssignedBookings(fetchedBookings);
+                setLoading(false);
+            });
 
-//   // Function to save the selected day off to Firebase
-//   const saveDayOff = () => {
-//     const user = auth.currentUser;
+            return () => unsubscribe(); // Cleanup on unmount
+        }
+    }, [currentUser]);
 
-//     if (!user) {
-//       console.error("User is not authenticated.");
-//       alert("You must be logged in to save a day off.");
-//       return; // Early exit if user is not authenticated
-//     }
+    return (
+        <div className="mover-dashboard">
+            <h1>Mover Dashboard</h1>
+            <p>Welcome, {currentUser?.email}! Below are your assigned bookings:</p>
 
-//     if (dayOff) {
-//       const dayOffRef = ref(db, `dayOffs/${user.uid}/${dayOff.getTime()}`);
+            {loading ? (
+                <p>Loading bookings...</p>
+            ) : assignedBookings.length > 0 ? (
+                <table className="assigned-bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Furniture Amount</th>
+                            <th>Distance</th>
+                            <th>Starting Location</th>
+                            <th>Arrival Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {assignedBookings.map((booking) => (
+                            <tr key={booking.id}>
+                                <td>{booking.date}</td>
+                                <td>{booking.furnitureAmount}</td>
+                                <td>{booking.distance} km</td>
+                                <td>{booking.startingLocation}</td>
+                                <td>{booking.arrivalLocation}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No bookings assigned yet.</p>
+            )}
+        </div>
+    );
+};
 
-//       set(dayOffRef, {
-//         day: dayOff.toISOString(),
-//       })
-//       .then(() => {
-//         alert('Day off saved!');
-//       })
-//       .catch((error) => {
-//         console.error("Error saving day off: ", error.message);
-//       });
-//     } else {
-//       console.error("No dayOff selected.");
-//       alert("Please select a day off before saving.");
-//     }
-//   };
+export default MoverDashboard;
 
-//   return (
-//     <div>
-//       <h1>Movers Dashboard</h1>
 
-//       <h2>Select a Day Off:</h2>
-//       <Calendar
-//         onChange={(date) => {
-//           setDayOff(date); // Update dayOff state when a date is selected
-//         }}
-//         value={dayOff} // Set the current value of the calendar
-//       />
-//       <button onClick={saveDayOff}>Save Day Off</button>
-
-//       <h2>Current Day Offs:</h2>
-//       {dayOffsList.length > 0 ? (
-//         <ul>
-//           {dayOffsList.map((off, index) => (
-//             <li key={index}>{new Date(off.day).toLocaleDateString()}</li>
-//           ))}
-//         </ul>
-//       ) : (
-//         <p>No day offs selected.</p>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default MoversDashboard;
 
 
 

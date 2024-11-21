@@ -4,6 +4,7 @@ import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import BookingPage from './BookingPage';
 import AdminDashboard from './AdminDashboard';
+import MoversDashboard from './MoversDashboard';
 
 function App() {
   return (
@@ -17,6 +18,9 @@ function App() {
         
         {/* Admin Dashboard route */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
+        {/* Movers Dashboard route */}
+        <Route path="/movers-dashboard" element={<MoversDashboard />} />
 
         {/* Booking route */}
         <Route path="/booking" element={<BookingPage />} />

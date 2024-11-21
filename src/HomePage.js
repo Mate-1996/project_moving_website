@@ -98,7 +98,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { ref, push, set, onValue } from 'firebase/database'; // Import Realtime Database methods
-import { auth, db } from './firebaseConfig'; // Import Realtime Database instance
+import { auth, db } from './FirebaseConfig'; // Import Realtime Database instance
 import './home.css';
 
 const HomePage = () => {

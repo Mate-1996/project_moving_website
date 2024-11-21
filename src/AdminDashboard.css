@@ -22,17 +22,24 @@ h1 {
     font-size: 2.5em;
     margin-bottom: 20px;
     color: #ffffff; /* White text for headings */
+    text-align: center;
+    border-bottom: 2px solid #444; /* Underline with a subtle border */
+    padding-bottom: 10px;
 }
 
 h2 {
     font-size: 2em;
     margin-top: 30px;
     color: #ffffff; /* White text for subheadings */
+    border-bottom: 1px solid #555; /* Underline with a subtle border */
+    padding-bottom: 5px;
 }
 
 input[type="text"],
 input[type="date"],
-input[type="number"] {
+input[type="number"],
+input[type="email"],
+input[type="password"] {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 10px 0;
@@ -44,34 +51,11 @@ input[type="number"] {
 
 input[type="text"]:focus,
 input[type="date"]:focus,
-input[type="number"]:focus {
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
     border-color: #ffffff; /* White border on focus */
-}
-
-.bookings-table,
-.reviews-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.bookings-table th,
-.reviews-table th {
-    background-color: #444; /* Dark grey background for table headers */
-    color: #ffffff; /* White text for table headers */
-    padding: 10px;
-    text-align: left;
-}
-
-.bookings-table td,
-.reviews-table td {
-    padding: 10px;
-    border-bottom: 1px solid #444; /* Dark grey border between rows */
-}
-
-.bookings-table tr:hover,
-.reviews-table tr:hover {
-    background-color: #555; /* Darker grey on row hover */
+    background-color: #4a4a4a; /* Slightly lighter background on focus */
 }
 
 button {
@@ -81,32 +65,109 @@ button {
     border-radius: 5px;
     padding: 10px 15px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
     font-weight: bold;
 }
 
 button:hover {
     background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Slight lift on hover */
 }
 
 button:focus {
     outline: none; /* Remove default outline on focus */
+    box-shadow: 0 0 5px #007bff; /* Subtle focus effect */
 }
 
-input[type="text"],
-input[type="date"],
-input[type="number"] {
-    border: 1px solid #444; /* Dark grey border */
-    border-radius: 5px; /* Rounded corners */
-    background-color: #3a3a3a; /* Input background */
-    color: #ffffff; /* Text color */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-input[type="text"]:focus,
-input[type="date"]:focus,
-input[type="number"]:focus {
-    border-color: #ffffff; /* Change border color on focus */
-    background-color: #4a4a4a; /* Slightly lighter on focus */
+th {
+    background-color: #444; /* Dark grey background for table headers */
+    color: #ffffff; /* White text for table headers */
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #444; /* Dark grey border between rows */
+}
+
+tr:hover {
+    background-color: #555; /* Darker grey on row hover */
+}
+
+.search-bar {
+    width: 100%;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.search-bar input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    margin: 0 auto;
+    border: 1px solid #555; /* Subtle border for input */
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: #ffffff;
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: #ffffff; /* Highlight border on focus */
+}
+
+.movers-form {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #3a3a3a; /* Form background */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.movers-form input {
+    width: 90%;
+    margin: 10px auto;
+    display: block;
+}
+
+.movers-table,
+.reviews-table,
+.bookings-table {
+    margin-top: 20px;
+    background-color: #3a3a3a; /* Table background */
+    border-radius: 8px;
+    overflow: hidden; /* Clip borders for cleaner look */
+}
+
+.movers-table td,
+.reviews-table td,
+.bookings-table td {
+    color: #e0e0e0; /* Lighter text for table data */
+}
+
+/* Success and Error Messages */
+.success-message,
+.error-message {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.success-message {
+    color: #ffffff;
+    background-color: #28a745; /* Green background */
+}
+
+.error-message {
+    color: #ffffff;
+    background-color: #dc3545; /* Red background */
 }
 
 /* Responsive Styles */
@@ -127,5 +188,14 @@ input[type="number"]:focus {
         width: 100%;
         margin: 5px 0;
     }
+
+    .search-bar input[type="text"] {
+        width: 100%;
+    }
+
+    .movers-form input {
+        width: 100%;
+    }
 }
+
 

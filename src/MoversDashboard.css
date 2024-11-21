@@ -1,60 +1,58 @@
 .mover-dashboard {
-    max-width: 800px;  /* Set a maximum width for the dashboard */
-    margin: 0 auto;    /* Center the dashboard */
-    padding: 20px;     /* Add some padding */
-    background-color: #f9f9f9;  /* Light background color */
-    border-radius: 8px;  /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Soft shadow effect */
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #2e2e2e;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    color: #f0f0f0;
 }
 
-h2 {
-    text-align: center;  /* Center the main heading */
-    color: #333;         /* Dark text color */
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #ffffff;
 }
 
-h3 {
-    margin-top: 20px;  /* Space above the subheading */
-    color: #555;       /* Slightly lighter color for subheading */
+p {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-ul {
-    list-style-type: none;  /* Remove default list styles */
-    padding: 0;             /* Remove padding */
+.assigned-bookings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-li {
-    padding: 10px;        /* Space inside each list item */
-    border-bottom: 1px solid #ddd; /* Light border between items */
-    transition: background-color 0.3s; /* Smooth background change */
+.assigned-bookings-table th {
+    background-color: #444;
+    color: #ffffff;
+    padding: 10px;
+    text-align: left;
 }
 
-li:hover {
-    background-color: #f0f0f0; /* Highlight on hover */
+.assigned-bookings-table td {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    color: #e0e0e0;
 }
 
-.custom-datepicker {
-    width: 100%;                  /* Full width */
-    padding: 10px;               /* Padding inside the input */
-    border: 1px solid #ccc;      /* Light border */
-    border-radius: 4px;          /* Rounded corners */
-    margin-top: 10px;            /* Space above the date picker */
-    margin-bottom: 20px;         /* Space below the date picker */
+.assigned-bookings-table tr:hover {
+    background-color: #555;
 }
 
-button {
-    display: block;               /* Make button block-level */
-    width: 100%;                 /* Full width */
-    padding: 10px;               /* Padding inside button */
-    background-color: #007bff;   /* Primary color */
-    color: white;                /* White text */
-    border: none;                /* Remove default border */
-    border-radius: 4px;         /* Rounded corners */
-    font-size: 16px;            /* Font size */
-    cursor: pointer;             /* Pointer cursor on hover */
-    transition: background-color 0.3s; /* Smooth background color change */
-}
+@media (max-width: 768px) {
+    .mover-dashboard {
+        padding: 10px;
+    }
 
-button:hover {
-    background-color: #0056b3;   /* Darker shade on hover */
-}
+    h1 {
+        font-size: 2em;
+    }
 
+    .assigned-bookings-table {
+        font-size: 0.9em;
+    }
+}

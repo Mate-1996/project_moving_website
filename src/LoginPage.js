@@ -128,8 +128,10 @@
 
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
-import { auth } from './firebaseConfig'; // Firebase config file
+import { auth } from './FirebaseConfig'; // Firebase config file
 import { useNavigate } from 'react-router-dom'; // For redirecting after login/signup
+import { ref, onValue } from 'firebase/database';
+import { db } from './FirebaseConfig';
 import './LoginPage.css'; // Your custom CSS for the form
 
 function App() {
@@ -143,78 +145,112 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Track if user is logged in
     const navigate = useNavigate(); // Used for navigating between routes
 
-    const adminEmail = 'admin@centorimoving.com';
+    const adminEmail = 'admin@centoriadmin.com';
     const adminPassword = '1234'; // Hardcoded admin password
 
     // Handle login
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setErrorMessage('');
-        setSuccessMessage('');
-        try {
-            if (email === adminEmail && password === adminPassword) {
-                setSuccessMessage(`Logged in successfully as admin`);
-                setIsLoggedIn(true); // Set logged in status
-                navigate('/admin-dashboard'); // Redirect to admin dashboard
-            } else {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const userEmail = userCredential.user.email;
-
-                setSuccessMessage(`Logged in successfully as ${userEmail}`);
-                setIsLoggedIn(true); // Set logged in status
-                navigate('/home'); // Redirect to home page after login
-
-                setEmail('');
-                setPassword('');
-            }
-        } catch (error) {
-            setErrorMessage("Login failed. Incorrect password or email.");
-        }
-    };
-
-    // Handle sign up
-    const handleSignUp = async (e) => {
-        e.preventDefault();
-        setErrorMessage('');
-        setSuccessMessage('');
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            setSuccessMessage(`Account created successfully for ${userCredential.user.email}`);
+const handleLogin = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+        // Check if the email belongs to an admin
+        if (adminEmail === email && adminPassword === password ) {
+            setSuccessMessage('Logged in successfully as admin');
             setIsLoggedIn(true); // Set logged in status
-            navigate('/home'); // Redirect to home page after sign-up
-            setEmail('');
-            setPassword('');
-        } catch (error) {
-            setErrorMessage("Failed to create account. Please try again.");
+            navigate('/admin-dashboard'); // Redirect to admin dashboard
+        } 
+        // Check if the email is a mover's email
+        else if (email.endsWith('@centorimoving.com')) {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid; // Extract user ID
+            const userEmail = userCredential.user.email; // Extract email from user credentials
+        
+            console.log(`Mover logged in: UserID = ${userId}, Email = ${userEmail}`); // Log user info
+        
+            // Check if the user is a mover
+            const userRef = ref(db, `movers/${email.replace('.', '_')}`);
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    setSuccessMessage(`Logged in successfully as mover.`);
+                    setIsLoggedIn(true);
+                    navigate('/movers-dashboard'); // Redirect to movers dashboard
+                } else {
+                    setErrorMessage('Login failed. Not authorized as a mover.');
+                }
+            });
         }
-    };
+        
+        
+        
+        // Regular user login
+        else {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userEmail = userCredential.user.email;
+            setSuccessMessage(`Logged in successfully as ${userEmail}`);
+            setIsLoggedIn(true); // Set logged in status
+            navigate('/home'); // Redirect to home page after login
+        }
 
-    // Handle password reset
-    const handlePasswordReset = async (e) => {
-        e.preventDefault();
-        setErrorMessage('');
-        setSuccessMessage('');
-        try {
-            await sendPasswordResetEmail(auth, resetEmail);
-            setSuccessMessage('Reset email sent successfully! Check your inbox.');
-            setResetEmail('');
-            setShowReset(false); // Hide reset password form
-        } catch (error) {
-            setErrorMessage('Failed to send reset email. Please try again.');
-        }
-    };
+        setEmail('');
+        setPassword('');
+    } catch (error) {
+        setErrorMessage('Login failed. Incorrect password or email.');
+    }
+};
 
-    // Handle logout
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            setSuccessMessage('Logged out successfully.');
-            setIsLoggedIn(false); // Update logged-in state
-            navigate('/'); // Redirect to login page
-        } catch (error) {
-            setErrorMessage('Failed to log out. Please try again.');
+// Handle sign up
+const handleSignUp = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+        // Check if the email ends with @centorimoving.com (for movers)
+        if (email.endsWith('@centorimoving.com')) {
+            setErrorMessage('Movers accounts can only be created by an admin.');
+            return;
         }
-    };
+
+        // Regular user sign-up
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        setSuccessMessage(`Account created successfully for ${userCredential.user.email}`);
+        setIsLoggedIn(true); // Set logged in status
+        navigate('/home'); // Redirect to home page after sign-up
+
+        setEmail('');
+        setPassword('');
+    } catch (error) {
+        setErrorMessage('Failed to create account. Please try again.');
+    }
+};
+
+
+// Handle password reset
+const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+        await sendPasswordResetEmail(auth, resetEmail);
+        setSuccessMessage('Reset email sent successfully! Check your inbox.');
+        setResetEmail('');
+        setShowReset(false); // Hide reset password form
+    } catch (error) {
+        setErrorMessage('Failed to send reset email. Please try again.');
+    }
+};
+
+// Handle logout
+const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        setSuccessMessage('Logged out successfully.');
+        setIsLoggedIn(false); // Update logged-in state
+        navigate('/'); // Redirect to login page
+    } catch (error) {
+        setErrorMessage('Failed to log out. Please try again.');
+    }
+};
 
     return (
         <div className="login-container">
