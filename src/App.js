@@ -15,6 +15,7 @@ function App() {
         {/* Login route */}
         <Route path="/login" element={<LoginPage />} />
         
+        {/* Admin Dashboard route */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         {/* Booking route */}
@@ -28,5 +29,7 @@ function App() {
 }
 
 export default App;
+
+
 
 

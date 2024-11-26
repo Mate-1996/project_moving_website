@@ -1,0 +1,16 @@
+/* src/Dashboard.css */
+.dashboard {
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+  }
+  
+  .upcoming-moves {
+    margin-bottom: 40px;
+  }
+  
+  .calendar-section {
+    margin-top: 40px;
+  }
+  
