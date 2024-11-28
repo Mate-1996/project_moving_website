@@ -115,13 +115,11 @@ const AdminDashboard = () => {
             const moverRef = ref(db, `movers/${sanitizedEmail}`);
             await set(moverRef, { email, role: 'mover' });
     
-            setSuccessMessage(`Mover account for ${email} created successfully.`);
-            setErrorMessage('');
+            
             setNewMover({ email: '', password: '' }); // Clear the form fields after success
         } catch (error) {
             console.error("Error creating mover account:", error);
-            setErrorMessage("Failed to create mover account. " + error.message);
-            setSuccessMessage('');
+           
         }
     };
 
@@ -381,6 +379,7 @@ const AdminDashboard = () => {
                 </td>
                 <td>
                     <select
+                         className="dropdown-select"
                         onChange={(e) =>
                             handleAssignMover(booking, e.target.value)
                         }
@@ -423,20 +422,7 @@ const AdminDashboard = () => {
                             >
                                 Delete
                             </button>
-                            {booking.assignedTo ? (
-                                <button
-                                    onClick={() =>
-                                        handleUnassignMover(
-                                            booking,
-                                            booking.assignedTo
-                                        )
-                                    }
-                                >
-                                    Unassign
-                                </button>
-                            ) : (
-                                <span>Not Assigned</span>
-                            )}
+                            
                         </>
                     )}
                 </td>
@@ -459,6 +445,7 @@ const AdminDashboard = () => {
     type="email"
     placeholder="Mover's Email"
     value={newMover.email}
+    autoComplete="new-email" 
     onChange={(e) => setNewMover({ ...newMover, email: e.target.value })}
     required
 />
@@ -467,6 +454,7 @@ const AdminDashboard = () => {
     placeholder="Mover's Password"
     value={newMover.password}
     onChange={(e) => setNewMover({ ...newMover, password: e.target.value })}
+    autoComplete="new-password" 
     required
 />
         <button type="submit">Create Account</button>

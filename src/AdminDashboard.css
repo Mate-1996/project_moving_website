@@ -199,3 +199,41 @@ tr:hover {
 }
 
 
+.dropdown-select {
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    background-color: #f9f9f9; 
+    color: #333; 
+    font-size: 16px; 
+    appearance: none; 
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; 
+}
+
+
+.dropdown-select:hover {
+    border-color: #007bff;
+}
+
+
+.dropdown-select:focus {
+    border-color: #007bff; 
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); 
+}
+
+
+.dropdown-select option {
+    padding: 10px; 
+    background-color: #ffffff;
+    color: #333;
+}
+
+
+.dropdown-select:disabled {
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed; 
+}
+

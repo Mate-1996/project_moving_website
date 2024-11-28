@@ -1,31 +1,36 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
 import { Link } from 'react-router-dom';
-import { useAuthState } from 'react-firebase-hooks/auth'; // Hook to get auth state
-import { auth, db } from './FirebaseConfig'; // Firebase authentication and Realtime Database
-import { ref, onValue, set, push, remove } from 'firebase/database'; // Import Firebase Realtime Database methods
-import { loadStripe } from '@stripe/stripe-js';  // Import Stripe
-import { Elements} from '@stripe/react-stripe-js';  // Stripe elements
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { auth, db } from './FirebaseConfig'; 
+import { ref, push, set, onValue } from 'firebase/database';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { loadStripe } from '@stripe/stripe-js';
 import './Booking.css';
 
 const stripePromise = loadStripe('pk_test_51QClMKG3xeoTL0dZZfCkdfTHuATPGjJ5eF6dW9Cg2Y5KmOL78cqMXlMiTeOSYMuHRsnwGval4VtZkUF0ItHgShye00VgnTnlAt');
 
-const Booking = () => {
+const BookingPage = () => {
+    const mapContainerRef = useRef(null);
+    const [viewport] = useState({
+        latitude: 45.5017, // Montreal Latitude
+        longitude: -73.5673, // Montreal Longitude
+        zoom: 12,
+    });
+    const [map,setMap] = useState(null);
     const [date, setDate] = useState('');
     const [furnitureAmount, setFurnitureAmount] = useState('');
     const [distance, setDistance] = useState('');
+    const [bookings, setBookings] = useState([]);
+    const [fragile, setFragile] = useState(false);
     const [startingLocation, setStartingLocation] = useState('');
     const [arrivalLocation, setArrivalLocation] = useState('');
-    const [fragile, setFragile] = useState(false);
+    const [isSelectingStarting, setIsSelectingStarting] = useState(true);
     const [message, setMessage] = useState('');
-    const [user] = useAuthState(auth); // Get current user
-    const [bookings, setBookings] = useState([]); // For storing user's bookings
-    const [selectedBookingId, setSelectedBookingId] = useState(null); // Track selected booking
-    const [price, setPrice] = useState(0);  // State for total price
-
-    // Set min date to today's date
+    const [user] = useAuthState(auth);
+    const [price, setPrice] = useState(0);
     const today = new Date().toISOString().split('T')[0];
 
-    // Fetch bookings from Firebase Realtime Database
     useEffect(() => {
         if (user) {
             const bookingsRef = ref(db, `bookings/${user.uid}`); // Reference to the user's bookings
@@ -51,17 +56,45 @@ const Booking = () => {
         }
     }, [user]);
 
-    // Calculate total price based on the number of furniture items and distance
-    const calculatePrice = useCallback(() => {
-        const furniturePrice = Number(furnitureAmount) * 10;  // $10 per furniture
-        const distancePrice = Number(distance) * 5;           // $5 per km
-        setPrice(furniturePrice + distancePrice);
-      }, [furnitureAmount, distance]);
-    
-      useEffect(() => {
-        calculatePrice();  // Recalculate price when furniture amount or distance changes
-      }, [furnitureAmount, distance, calculatePrice]);
+    // Initialize Mapbox Map
+    useEffect(() => {
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWF0ZS0xOTk2IiwiYSI6ImNtNDFpNmxqZDFidmsyanE0cnliNHcxazkifQ.6VNhFhaGgb1ZZY7RsN_LHw';
 
+        const mapInstance = new mapboxgl.Map({
+            container: mapContainerRef.current,
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [viewport.longitude, viewport.latitude],
+            zoom: viewport.zoom,
+        });
+
+        // Add navigation controls
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+        // Listen for map clicks
+        mapInstance.on('click', (event) => {
+            const lngLat = event.lngLat;
+
+            if (isSelectingStarting) {
+                setStartingLocation(`Lat: ${lngLat.lat}, Lng: ${lngLat.lng}`);
+            } else {
+                setArrivalLocation(`Lat: ${lngLat.lat}, Lng: ${lngLat.lng}`);
+            }
+        });
+
+        // Set the map instance
+        setMap(mapInstance);
+
+        return () => mapInstance.remove(); // Cleanup on unmount
+    }, [viewport, isSelectingStarting]);
+
+    // Calculate total price based on furniture and distance
+    useEffect(() => {
+        const furniturePrice = Number(furnitureAmount) * 10; 
+        const distancePrice = Number(distance) * 5;          
+        setPrice(furniturePrice + distancePrice);
+    }, [furnitureAmount, distance]);
+
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -136,37 +169,38 @@ const Booking = () => {
         }
     };
 
-    // Function to reset the form fields
+    // const saveBooking = async () => {
+    //     try {
+    //         const bookingData = {
+    //             date,
+    //             furnitureAmount: Number(furnitureAmount),
+    //             distance,
+    //             startingLocation,
+    //             arrivalLocation,
+    //             userId: user.uid,
+    //             price,
+    //             createdAt: new Date().toISOString(),
+    //         };
+
+    //         const bookingRef = ref(db, `bookings/${user.uid}`);
+    //         const newBookingRef = push(bookingRef);
+    //         await set(newBookingRef, bookingData);
+
+    //         setMessage('Booking created successfully!');
+    //         resetForm();
+    //     } catch (error) {
+    //         console.error("Error saving booking: ", error);
+    //         setMessage('Failed to save booking. Please try again.');
+    //     }
+    // };
+
+    // Reset the form fields
     const resetForm = () => {
         setDate('');
         setFurnitureAmount('');
         setDistance('');
         setStartingLocation('');
         setArrivalLocation('');
-        setFragile(false);
-        setSelectedBookingId(null);
-    };
-
-    const handleUpdate = (id, booking) => {
-        setSelectedBookingId(id); // Set the ID of the booking to update
-        setDate(booking.date);
-        setFurnitureAmount(booking.furnitureAmount);
-        setDistance(booking.distance);
-        setStartingLocation(booking.startingLocation);
-        setArrivalLocation(booking.arrivalLocation);
-        setFragile(booking.fragile);
-    };
-
-    const handleDelete = async (id) => {
-        try {
-            const bookingRef = ref(db, `bookings/${user.uid}/${id}`);
-            await remove(bookingRef); // Remove the selected booking from Firebase
-
-            setMessage('Booking canceled successfully!');
-        } catch (error) {
-            console.error("Error deleting booking: ", error);
-            setMessage('Failed to cancel booking. Please try again.');
-        }
     };
 
     return (
@@ -181,7 +215,7 @@ const Booking = () => {
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        min={today} // Prevent selecting past dates
+                        min={today}
                         required
                     />
                 </div>
@@ -212,8 +246,8 @@ const Booking = () => {
                     <input
                         type="text"
                         value={startingLocation}
-                        onChange={(e) => setStartingLocation(e.target.value)}
-                        required
+                        readOnly
+                        placeholder="Select on the map"
                     />
                 </div>
                 <div className="form-group">
@@ -221,8 +255,8 @@ const Booking = () => {
                     <input
                         type="text"
                         value={arrivalLocation}
-                        onChange={(e) => setArrivalLocation(e.target.value)}
-                        required
+                        readOnly
+                        placeholder="Select on the map"
                     />
                 </div>
                 <div className="form-group">
@@ -236,44 +270,48 @@ const Booking = () => {
                     </label>
                 </div>
                 <div className="form-group">
+                    <button type="button" onClick={() => setIsSelectingStarting(true)}>
+                        Select Starting Location
+                    </button>
+                    <button type="button" onClick={() => setIsSelectingStarting(false)}>
+                        Select Arrival Location
+                    </button>
+                </div>
+                <div className="form-group">
                     <label>Total Price: ${price}</label>
                 </div>
-                
-                <button type="submit">{selectedBookingId ? 'Update Booking & Pay' : 'Submit Booking & Pay'}</button>
+                <button type="submit">Submit Booking & Pay</button>
             </form>
 
+            <h2>Select Locations on the Map</h2>
+            <div
+                ref={mapContainerRef}
+                style={{ width: '100%', height: '400px' }}
+            />
             <h2>Your Bookings</h2>
             {bookings.length > 0 ? (
-                <ul>
-                    {bookings.map((booking) => (
-                        <li key={booking.id} className="booking-item">
-                            <p>Date: {booking.date}</p>
-                            <p>Furniture: {booking.furnitureAmount}</p>
-                            <p>Distance: {booking.distance}</p>
-                            <p>Starting Location: {booking.startingLocation}</p>
-                            <p>Arrival Location: {booking.arrivalLocation}</p>
-                            <p>Fragile: {booking.fragile ? 'Yes' : 'No'}</p>
-                            <button onClick={() => handleUpdate(booking.id, booking)}>Edit</button>
-                            <button onClick={() => handleDelete(booking.id)}>Cancel</button>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No bookings found.</p>
-            )}
-            {/* Home Button */}
-            <Link to="/" className="home-button">
-                <button>Home</button>
-            </Link>
+    <ul>
+        {bookings.map((booking) => (
+            <li key={booking.id} className="booking-item">
+                <p>Date: {booking.date}</p>
+                <p>Furniture: {booking.furnitureAmount}</p>
+                <p>Distance: {booking.distance}</p>
+                <p>Starting Location: {booking.startingLocation}</p>
+                <p>Arrival Location: {booking.arrivalLocation}</p>
+                <p>Fragile: {booking.fragile ? 'Yes' : 'No'}</p>               
+            </li>
+        ))}
+    </ul>
+) : (
+    <p>No bookings found.</p>
+)}
+{/* Home Button */}
+<Link to="/" className="home-button">
+    <button>Home</button>
+</Link>
         </div>
+        
     );
 };
 
-// Wrap your booking component with Stripe's Elements provider
-const App = () => (
-    <Elements stripe={stripePromise}>
-        <Booking />
-    </Elements>
-);
-
-export default App;
+export default BookingPage;

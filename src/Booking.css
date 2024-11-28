@@ -161,4 +161,9 @@
       font-size: 0.9rem;
     }
   }
+
+  .ReactMapGL {
+    width: 100%;
+    height: 400px;
+}
   
